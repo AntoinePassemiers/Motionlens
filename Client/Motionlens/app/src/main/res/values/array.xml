@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="human_activities">
+        <item>AAAAAA</item>
+        <item>MMMMMM</item>
+        <item>POPOPO</item>
+        <item>BVBVBV</item>
+        <item>VVVVVV</item>
+    </string-array>
+</resources>
