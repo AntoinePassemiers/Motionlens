@@ -18,7 +18,7 @@
         android:layout_marginLeft="35dp"
         app:layout_constraintLeft_toLeftOf="parent">
 
-        <AutoCompleteTextView
+        <Spinner
             android:id="@+id/activity_with_white_list"
             android:layout_width="150dp"
             android:layout_height="wrap_content"

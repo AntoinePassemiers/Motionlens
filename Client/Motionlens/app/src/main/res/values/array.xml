@@ -1,10 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="human_activities">
-        <item>AAAAAA</item>
-        <item>MMMMMM</item>
-        <item>POPOPO</item>
-        <item>BVBVBV</item>
-        <item>VVVVVV</item>
+        <item>001 - Attending class</item>
+        <item>002 - Attending a concert</item>
+        <item>003 - Sitting in a cinema/opera/theater</item>
+        <item>004 - Brushing one\'s teeth</item>
+        <item>005 - Cooking</item>
+        <item>006 - Doing cardio</item>
+        <item>007 - Doing the groceries</item>
+        <item>008 - Doing team sport</item>
+        <item>009 - Driving a car</item>
+        <item>010 - Eating</item>
+        <item>011 - Going to the Mass/Service</item>
+        <item>012 - Playing board games</item>
+        <item>013 - Playing drums</item>
+        <item>014 - Playing guitar/bass</item>
+        <item>015 - Playing piano</item>
+        <item>016 - Playing video games</item>
+        <item>017 - Riding a bike</item>
+        <item>018 - Riding a motorcycle</item>
+        <item>019 - Shopping</item>
+        <item>020 - Sleeping</item>
+        <item>021 - Surfing on the web</item>
+        <item>022 - Taking a bath</item>
+        <item>023 - Taking the bus/tram</item>
+        <item>024 - Visiting the bathroom</item>
+        <item>025 - Walking/wandering</item>
+        <item>026 - Walking down stairs</item>
+        <item>027 - Walking the dog</item>
+        <item>028 - Walking up stairs</item>
+        <item>029 - Watching TV</item>
+        <item>030 - Working on desk</item>
     </string-array>
 </resources>

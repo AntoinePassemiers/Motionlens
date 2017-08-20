@@ -1,0 +1,30 @@
+HEADER (24 bytes)
+====================
+Long : n_acc = number of accelerometer samples
+Long : n_gyr = number of gyroscope samples
+Long : ha_id = human activity id
+
+DATA (samples of size 20 bytes)
+====
+Float: X value of accelerometer sample 1
+Float: Y value of accelerometer sample 1
+Float: Z value of accelerometer sample 1
+Long : Timestamp of accelerometer sample 1
+.
+.
+.
+Float: X value of accelerometer sample n_acc
+Float: Y value of accelerometer sample n_acc
+Float: Z value of accelerometer sample n_acc
+Long : Timestamp of accelerometer sample n_acc
+Float: X value of gyroscope sample 1
+Float: Y value of gyroscope sample 1
+Float: Z value of gyroscope sample 1
+Long : Timestamp of gyroscope sample 1
+.
+.
+.
+Float: X value of gyroscope sample n_gyr
+Float: Y value of gyroscope sample n_gyr
+Float: Z value of gyroscope sample n_gyr
+Long : Timestamp of gyroscope sample n_gyr

@@ -11,17 +11,22 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    private static boolean USE_WAKE_LOCK = true;
+    private static boolean USE_WAKE_LOCK = false;
 
     private boolean recording = false;
 
@@ -33,6 +38,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView currentX, currentY, currentZ;
     private TextView gyroscopeX, gyroscopeY, gyroscopeZ;
     private Button recordButton;
+    private Spinner spinner;
+
+    private HashMap<String, Integer> human_activities;
+    private DataflowManager dfManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,21 +51,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setSupportActionBar(toolbar);
         context = getApplicationContext();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        human_activities = new HashMap<String, Integer>();
+        dfManager = new DataflowManager(context);
 
         // https://developer.android.com/training/keyboard-input/style.html
-        AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.activity_with_white_list);
-        String[] human_activities = getResources().getStringArray(R.array.human_activities);
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, human_activities);
-        textView.setAdapter(adapter);
+        spinner = (Spinner) findViewById(R.id.activity_with_white_list);
+        String[] has = getResources().getStringArray(R.array.human_activities);
+        for (String ha : has) {
+            Integer ha_id = Integer.parseInt(ha.substring(0, 3));
+            String ha_name = ha.substring(6);
+            assert(human_activities.get(ha_name) == null);
+            human_activities.put(ha_name, ha_id);
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_list_item_1,
+                new ArrayList<String>(human_activities.keySet()));
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
 
         currentX = (TextView) findViewById(R.id.currentX);
         currentY = (TextView) findViewById(R.id.currentY);
@@ -69,38 +82,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         recordButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 recording = !recording;
-                if (recording) {
+                if (recording) { // Start recording
                     recordButton.setText("Pause");
+                    Log.d("Selected text", spinner.getSelectedItem().toString().split("\n")[0]);
+                    String selection = spinner.getSelectedItem().toString();
+                    Integer ha_id = human_activities.get(selection.split("\n")[0]);
+                    if (ha_id == null) throw new AssertionError("Could not find activity by name");
+                    dfManager.startHA(ha_id);
                 }
-                else {
+                else { // Stop recording
                     recordButton.setText("Record");
+                    dfManager.stopHA();
                 }
             }
         });
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
-            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
             gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
             sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
         }
         else {
             // TODO: raise error
         }
-        if (USE_WAKE_LOCK) {
-            acquireWakeLock();
-        }
     }
 
     protected void onResume() {
         super.onResume();
+        releaseWakeLock();
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     protected void onPause() {
         super.onPause();
+        releaseWakeLock();
         sensorManager.unregisterListener(this);
     }
 
@@ -132,11 +150,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             currentX.setText(Float.toString(event.values[0]));
             currentY.setText(Float.toString(event.values[1]));
             currentZ.setText(Float.toString(event.values[2]));
+            if (recording) {
+                dfManager.addAccSample(event.values[0], event.values[1], event.values[2]);
+            }
         }
         else if (event.sensor == gyroscope) {
             gyroscopeX.setText(Float.toString(event.values[0]));
             gyroscopeY.setText(Float.toString(event.values[1]));
             gyroscopeZ.setText(Float.toString(event.values[2]));
+            if (recording) {
+                dfManager.addGyrSample(event.values[0], event.values[1], event.values[2]);
+            }
         }
     }
 
@@ -146,10 +170,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void acquireWakeLock() {
-        final PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        releaseWakeLock();
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PARTIAL_WAKE_LOCK");
-        wakeLock.acquire();
+        if (USE_WAKE_LOCK) {
+            final PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            releaseWakeLock();
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PARTIAL_WAKE_LOCK");
+            wakeLock.acquire();
+        }
     }
 
     public void releaseWakeLock() {
