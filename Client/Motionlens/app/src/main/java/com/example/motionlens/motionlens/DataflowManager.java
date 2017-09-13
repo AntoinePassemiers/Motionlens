@@ -4,13 +4,16 @@ import android.content.Context;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 
 
 public class DataflowManager {
+    private static final String SERVER_URL = "http://renavspainatal.pythonanywhere.com/file";
     private static final String TAG = "dfManager";
     private Context context;
     public static final int SAMPLE_SIZE = (3 * Float.SIZE + Long.SIZE) / Byte.SIZE;
@@ -61,16 +64,14 @@ public class DataflowManager {
 
     public void packData() {
         try {
-            String filename = "tmp";
-            FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(ByteBuffer.allocate(4).putInt(acc_data_n_samples).array());
-            outputStream.write(ByteBuffer.allocate(4).putInt(gyr_data_n_samples).array());
-            outputStream.write(acc_data.array());
-            outputStream.write(gyr_data.array());
-            outputStream.close();
-            Log.d(TAG, "Saved file " + filename);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            ByteBuffer data = ByteBuffer.allocate(8 + 2 * MAX_N_BYTES);
+            data.put(ByteBuffer.allocate(4).putInt(acc_data_n_samples).array());
+            data.put(ByteBuffer.allocate(4).putInt(gyr_data_n_samples).array());
+            data.put(acc_data.array());
+            data.put(gyr_data.array());
+
+            new UploadFilesTask(data.array()).execute(new URL(SERVER_URL));
+
         } catch (IOException e) {
             e.printStackTrace();
         }
