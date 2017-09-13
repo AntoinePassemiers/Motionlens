@@ -3,7 +3,7 @@ from werkzeug.utils import secure_filename
 import os
 
 ROOT_FOLDER = os.getcwd()
-UPLOAD_FOLDER = "files"
+UPLOAD_FOLDER = "Motionlens/Server/files"
 ALLOWED_EXTENSIONS = {"mdcar"}
 
 app = Flask(__name__)
@@ -13,15 +13,15 @@ def checkExtension(filename):
 
 @app.route("/file", methods = ["POST"])
 def upload():
-	if (request.method == "POST" and "data" in request.files):
-		file = request.files["data"]
-		filename = file.filename
+    if (request.method == "POST" and "data" in request.files):
+        file = request.files["data"]
+        filename = file.filename
 
-		if (file and checkExtension(filename)):
-			secureFilename = secure_filename(filename)
-			filePath = os.path.join(ROOT_FOLDER,UPLOAD_FOLDER,secureFilename)
-			file.save(filePath)
-			return str({"yo":"ok"})
+        if (file and checkExtension(filename)):
+            secureFilename = secure_filename(filename)
+            filePath = os.path.join(ROOT_FOLDER,UPLOAD_FOLDER,secureFilename)
+            file.save(filePath)
+            return str({"yo":"ok"})
 
 if __name__ == "__main__":
 	app.run(debug = True)
