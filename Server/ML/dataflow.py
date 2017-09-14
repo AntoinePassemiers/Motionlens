@@ -1,7 +1,11 @@
+# -*- coding: utf-8 -*-
+# dataflow.py : Dealing with mobile sensor data types
+# author : Antoine Passemiers
+
 import numpy as np
 
 
-class HAData:
+class MDCAR:
 
 	SAMPLE_T = np.dtype([
 		("X", np.float32), 
@@ -13,15 +17,22 @@ class HAData:
 		self.ha_id = ha_id
 		self.sensor1_data = sensor1_data
 		self.sensor2_data = sensor2_data
+
 	@staticmethod
-	def from_file(filepath):
-		pass
-	def to_file(filepath, data):
-		raw_sensor1 = self.sensor1_data.tobytes()
-		raw_sensor2 = self.sensor2_data.tobytes()
+	def random_data(self, n_samples):
+		stdv = float(np.random.randint(1, 100, size = 1))
+		intercept = float(np.random.randint(-50, 50, size = 1))
+		return stdv * np.random.rand(n_samples, dtype = np.float32) + intercept
+	
+	@staticmethod
+	def random_file(filepath, n_acc_samples, n_gyr_samples):
+		data = np.empty(n_acc_samples + n_gyr_samples, dtype = MDCAR.SAMPLE_T)
+		# data["X"] = MDCAR.random_data(n)
+		data["X"][:n_acc_samples] = MDCAR.random_data(n_acc_samples)
+		data["Y"][:n_acc_samples] = MDCAR.random_data(n_acc_samples)
+		data["Z"][:n_acc_samples] = MDCAR.random_data(n_acc_samples)
+		print(data["X"][:n_acc_samples])
 
 if __name__ == "__main__":
-	a = np.empty(40, dtype = HAData.SAMPLE_T)
-	b = np.empty(40, dtype = HAData.SAMPLE_T)
-	print(type(a[0]))
+	MDCAR.random_file("coucou.mdcar", 40, 50)
 	print("Finished")
