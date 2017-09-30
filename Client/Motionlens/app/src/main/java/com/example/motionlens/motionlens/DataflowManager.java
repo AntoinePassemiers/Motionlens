@@ -70,7 +70,7 @@ public class DataflowManager {
             data.put(acc_data.array());
             data.put(gyr_data.array());
 
-            new UploadFilesTask(data.array()).execute(new URL(SERVER_URL));
+            new UploadFilesTask(data).execute(new URL(SERVER_URL));
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,15 +1,17 @@
 from flask import Flask, request
 from werkzeug.utils import secure_filename
 import os
+from dataflow import *
+import numpy as np
 
 ROOT_FOLDER = os.getcwd()
 UPLOAD_FOLDER = "Motionlens/Server/files"
-ALLOWED_EXTENSIONS = {"mdcar"}
+
+DATA_PATH = "files"
+
 
 app = Flask(__name__)
 
-def checkExtension(filename):
-	return filename.split('.')[-1] in ALLOWED_EXTENSIONS
 
 @app.route("/file", methods = ["GET"])
 def get():
@@ -17,16 +19,11 @@ def get():
 
 @app.route("/file", methods = ["POST"])
 def upload():
-    if (request.method == "POST" and "data" in request.files):
-        file = request.files["data"]
-        filename = file.filename
+	rawstring = list(request.form.to_dict().keys())[0]
+	#use MDCAR
 
-        if (file and checkExtension(filename)):
-            secureFilename = secure_filename(filename)
-            filePath = os.path.join(ROOT_FOLDER,UPLOAD_FOLDER,secureFilename)
-            file.save(filePath)
-            return "post - ok - {} received".format(filename)
-    return "post - nok"
+	return "post - nok"
+
 
 if __name__ == "__main__":
 	app.run(debug = True)

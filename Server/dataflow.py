@@ -4,6 +4,7 @@
 
 import os
 import numpy as np
+import time
 
 
 DATA_PATH = "files"
@@ -51,6 +52,21 @@ class MDCAR:
 		bytes.tofile(filepath)
 		return data
 	
+	@staticmethod
+	def from_string(rawstring):
+		filepath = time.strftime("%Y%m%d-%H%M%S")
+		with open(filepath, "w") as f:
+			f.write(rawstring)
+			f.flush()
+		bytes = np.fromfile(filepath, dtype = np.uint8, count = len(rawstring))
+
+		header = np.frombuffer(bytes[:8], dtype = np.int32)
+
+		n_acc_samples = header[0]
+		n_gyr_samples = header[1]
+		data = np.frombuffer(bytes[8:], dtype = MDCAR.SAMPLE_T)
+		return n_acc_samples,n_gyr_samples,data
+
 	@staticmethod
 	def from_file(filepath):
 		bytes = np.fromfile(filepath)

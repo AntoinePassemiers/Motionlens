@@ -6,6 +6,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.HttpURLConnection;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -16,13 +17,14 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+
 public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
     private static final String TAG = "dfManager";
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private static final MediaType MEDIA_TYPE = MediaType.parse("mdcar");
-    byte[] data;
+    ByteBuffer data;
 
-    UploadFilesTask(byte[] data) {
+    UploadFilesTask(ByteBuffer data) {
         this.data = data;
     }
 
@@ -32,13 +34,26 @@ public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
 
         for (URL url : urls) {
             try {
-                String postUrl= "https://reqres.in/api/users/";
-                String postBody="{\n" +
-                        "    \"name\": \"morpheus\",\n" +
-                        "    \"job\": \"leader\"\n" +
-                        "}";
 
-                postRequest(postUrl,postBody);
+							HttpURLConnection con = (HttpURLConnection) url.openConnection();
+							con.setRequestMethod("POST");
+							con.setDoOutput(true);
+
+							BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(con.getOutputStream(), "UTF-8"));
+
+							//byte array to char array @VGR - https://stackoverflow.com/a/20916888/4654681
+							char[] chArr = new char[TOTAL_N_BYTES];
+							for (int k = 0; k < TOTAL_N_BYTES; k++) {
+									chArr[k] = (char) (data.get(k) & 0xff);
+							}
+
+							bw.write(chArr);	
+							bw.flush();
+							bw.close();
+
+							int responseCode = con.getResponseCode();
+
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
