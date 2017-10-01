@@ -20,7 +20,10 @@ def get():
 @app.route("/file", methods = ["POST"])
 def upload():
 	rawstring = list(request.form.to_dict().keys())[0]
-	#use MDCAR
+
+    fname = time.strftime("%Y%m%d-%H%M%S")
+    filepath = os.path.join(UPLOAD_FOLDER, fname)
+    MDCAR.save_from_string(rawstring, filepath)
 
 	return "post - nok"
 
