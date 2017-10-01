@@ -1,31 +1,37 @@
 package com.example.motionlens.motionlens;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.HttpURLConnection;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Headers;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import java.nio.ByteBuffer;
 
 
 public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
     private static final String TAG = "dfManager";
-    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final MediaType MEDIA_TYPE = MediaType.parse("mdcar");
+
+    public static final int TOTAL_N_BYTES = 100;
+
     ByteBuffer data;
 
     UploadFilesTask(ByteBuffer data) {
         this.data = data;
+    }
+
+    private void sendGet(URL url) throws Exception{
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        int responseCode = con.getResponseCode();
+        System.out.println("get resp code: " + responseCode);
+
+        BufferedReader in = new BufferedReader( new InputStreamReader(con.getInputStream()));
+
+        System.out.println(in.readLine());
     }
 
     @Override
@@ -34,24 +40,31 @@ public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
 
         for (URL url : urls) {
             try {
+                try {
+                    sendGet(url);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                System.out.println("End of GET");
 
-							HttpURLConnection con = (HttpURLConnection) url.openConnection();
-							con.setRequestMethod("POST");
-							con.setDoOutput(true);
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("POST");
+                con.setDoOutput(true);
 
-							BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(con.getOutputStream(), "UTF-8"));
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(con.getOutputStream(), "US-ASCII"));
 
-							//byte array to char array @VGR - https://stackoverflow.com/a/20916888/4654681
-							char[] chArr = new char[TOTAL_N_BYTES];
-							for (int k = 0; k < TOTAL_N_BYTES; k++) {
-									chArr[k] = (char) (data.get(k) & 0xff);
-							}
+                //byte array to char array @VGR - https://stackoverflow.com/a/20916888/4654681
+                char[] chArr = new char[TOTAL_N_BYTES];
+                for (int k = 0; k < TOTAL_N_BYTES; k++) {
+                    chArr[k] = (char) data.get(k);
+                }
 
-							bw.write(chArr);	
-							bw.flush();
-							bw.close();
+                bw.write(chArr, 0, chArr.length);
+                bw.flush();
+                bw.close();
 
-							int responseCode = con.getResponseCode();
+                int responseCode = con.getResponseCode();
+                System.out.println("Response code: " + responseCode);
 
 
             } catch (IOException e) {
@@ -61,29 +74,5 @@ public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
             return success;
         }
         return null;
-    }
-
-    void postRequest(String postUrl,String postBody) throws IOException {
-
-        OkHttpClient client = new OkHttpClient();
-
-        RequestBody body = RequestBody.create(JSON, postBody);
-
-        Request request = new Request.Builder()
-                .url(postUrl)
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                call.cancel();
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Log.d("TAG",response.body().string());
-            }
-        });
     }
 }
