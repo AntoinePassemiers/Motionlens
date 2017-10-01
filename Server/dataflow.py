@@ -75,12 +75,15 @@ class MDCAR:
 
 	@staticmethod
 	def from_file(filepath):
-		bytes = np.fromfile(filepath)
-		header = np.frombuffer(bytes[:2], dtype = np.int64)
-		n_acc_samples = header[0]
-		n_gyr_samples = header[1]
-		data = np.frombuffer(bytes[2:], dtype = SAMPLE_T)
-		return data
+		with open(filepath, "r") as f:
+			rawstring = f.read()
+			print(len(rawstring))
+			header = np.fromstring(rawstring[:8], dtype = BE_INT32_T)
+			print(header)
+			n_acc_samples = header[0]
+			n_gyr_samples = header[1]
+			data = np.fromstring(rawstring[8:], dtype = SAMPLE_T)
+			return data
 
 	@staticmethod
 	def save_from_string(rawstring, filepath):
@@ -94,3 +97,7 @@ def test_mdcar():
 	decoded = MDCAR.from_file("temp.mdcar")
 	assert((encoded == decoded).all())
 	print("Tests: success")
+
+
+decoded = MDCAR.from_file("files/20171001-172911.mdcar")
+# test_mdcar()

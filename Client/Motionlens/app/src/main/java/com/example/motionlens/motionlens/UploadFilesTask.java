@@ -15,8 +15,6 @@ import java.nio.ByteBuffer;
 public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
     private static final String TAG = "dfManager";
 
-    public static final int TOTAL_N_BYTES = 100;
-
     ByteBuffer data;
 
     UploadFilesTask(ByteBuffer data) {
@@ -40,13 +38,6 @@ public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
 
         for (URL url : urls) {
             try {
-                try {
-                    sendGet(url);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                System.out.println("End of GET");
-
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 con.setRequestMethod("POST");
                 con.setDoOutput(true);
@@ -54,8 +45,8 @@ public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(con.getOutputStream(), "US-ASCII"));
 
                 //byte array to char array @VGR - https://stackoverflow.com/a/20916888/4654681
-                char[] chArr = new char[TOTAL_N_BYTES];
-                for (int k = 0; k < TOTAL_N_BYTES; k++) {
+                char[] chArr = new char[DataflowManager.MAX_N_BYTES];
+                for (int k = 0; k < DataflowManager.MAX_N_BYTES; k++) {
                     chArr[k] = (char) data.get(k);
                 }
 
@@ -64,6 +55,7 @@ public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
                 bw.close();
 
                 int responseCode = con.getResponseCode();
+                System.out.println("Send " + DataflowManager.MAX_N_BYTES + " bytes");
                 System.out.println("Response code: " + responseCode);
 
 

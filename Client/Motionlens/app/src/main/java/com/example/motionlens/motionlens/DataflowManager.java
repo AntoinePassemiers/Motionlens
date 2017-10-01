@@ -13,7 +13,10 @@ public class DataflowManager {
     private static final String TAG = "dfManager";
     private Context context;
     public static final int SAMPLE_SIZE = (3 * Float.SIZE + Long.SIZE) / Byte.SIZE;
-    public static final int MAX_N_BYTES = 100 * SAMPLE_SIZE;
+    public static final int MAX_N_SAMPLES = 100;
+    public static final int MAX_N_BYTES_PER_BUFFER = MAX_N_SAMPLES * SAMPLE_SIZE;
+    public static final int HEADER_N_BYTES = 2 * 4;
+    public static final int MAX_N_BYTES = 2 * MAX_N_BYTES_PER_BUFFER + HEADER_N_BYTES;
 
     private Integer current_ha_id;
     private ByteArrayOutputStream bas;
@@ -29,8 +32,8 @@ public class DataflowManager {
     }
 
     public void flushBuffers() {
-        acc_data = ByteBuffer.allocate(MAX_N_BYTES);
-        gyr_data = ByteBuffer.allocate(MAX_N_BYTES);
+        acc_data = ByteBuffer.allocate(MAX_N_BYTES_PER_BUFFER);
+        gyr_data = ByteBuffer.allocate(MAX_N_BYTES_PER_BUFFER);
         acc_data_n_samples = 0;
         gyr_data_n_samples = 0;
     }
@@ -41,36 +44,37 @@ public class DataflowManager {
     }
 
     public void stopHA() {
-        packData();
+        // packData();
     }
 
     public void addAccSample(float X, float Y, float Z) {
         acc_data.putFloat(X); acc_data.putFloat(Y); acc_data.putFloat(Z);
         acc_data.putLong(System.currentTimeMillis());
         acc_data_n_samples += 1;
-        if (acc_data_n_samples >= MAX_N_BYTES) packData();
+        if (acc_data_n_samples >= MAX_N_SAMPLES) packData();
     }
 
     public void addGyrSample(float X, float Y, float Z) {
         gyr_data.putFloat(X); gyr_data.putFloat(Y); gyr_data.putFloat(Z);
         gyr_data.putLong(System.currentTimeMillis());
         gyr_data_n_samples += 1;
-        if (gyr_data_n_samples >= MAX_N_BYTES) packData();
+        if (gyr_data_n_samples >= MAX_N_SAMPLES) packData();
     }
 
     public void packData() {
         try {
-            ByteBuffer data = ByteBuffer.allocate(8 + 2 * MAX_N_BYTES);
+            ByteBuffer data = ByteBuffer.allocate(MAX_N_BYTES);
             data.put(ByteBuffer.allocate(4).putInt(acc_data_n_samples).array());
             data.put(ByteBuffer.allocate(4).putInt(gyr_data_n_samples).array());
             data.put(acc_data.array());
             data.put(gyr_data.array());
+
+            flushBuffers();
 
             new UploadFilesTask(data).execute(new URL(SERVER_URL));
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        flushBuffers();
     }
 }
