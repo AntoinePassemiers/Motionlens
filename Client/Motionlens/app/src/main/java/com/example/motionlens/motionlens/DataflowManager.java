@@ -47,14 +47,14 @@ public class DataflowManager {
     public void addAccSample(float X, float Y, float Z) {
         acc_data.putFloat(X); acc_data.putFloat(Y); acc_data.putFloat(Z);
         acc_data.putLong(System.currentTimeMillis());
-        acc_data_n_samples += SAMPLE_SIZE;
+        acc_data_n_samples += 1;
         if (acc_data_n_samples >= MAX_N_BYTES) packData();
     }
 
     public void addGyrSample(float X, float Y, float Z) {
         gyr_data.putFloat(X); gyr_data.putFloat(Y); gyr_data.putFloat(Z);
         gyr_data.putLong(System.currentTimeMillis());
-        gyr_data_n_samples += SAMPLE_SIZE;
+        gyr_data_n_samples += 1;
         if (gyr_data_n_samples >= MAX_N_BYTES) packData();
     }
 
