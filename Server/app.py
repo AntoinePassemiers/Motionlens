@@ -1,7 +1,7 @@
 from flask import Flask, request
 from werkzeug.utils import secure_filename
 import os
-from dataflow import *
+#from dataflow import *
 import numpy as np
 
 ROOT_FOLDER = os.getcwd()
@@ -19,10 +19,11 @@ def get():
 
 @app.route("/file", methods = ["POST"])
 def upload():
-    rawstring = list(request.form.to_dict().keys())[0]
-    fname = time.strftime("%Y%m%d-%H%M%S")
-    filepath = os.path.join(UPLOAD_FOLDER, fname)
-    MDCAR.save_from_string(rawstring, filepath)
+	print(request.get_data())
+	#rawstring = list(request.form.to_dict().keys())[0]
+	#fname = time.strftime("%Y%m%d-%H%M%S")
+	#filepath = os.path.join(UPLOAD_FOLDER, fname)
+	#MDCAR.save_from_string(rawstring, filepath)
 
 	return "post - nok"
 

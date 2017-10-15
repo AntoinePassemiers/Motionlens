@@ -7,9 +7,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 
-
 public class DataflowManager {
-    private static final String SERVER_URL = "http://renavspainatal.pythonanywhere.com/file";
+    private static final String SERVER_URL = "--server--/file";
     private static final String TAG = "dfManager";
     private Context context;
     public static final int SAMPLE_SIZE = (3 * Float.SIZE + Long.SIZE) / Byte.SIZE;
