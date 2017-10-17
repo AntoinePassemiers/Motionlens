@@ -1,11 +1,13 @@
 from flask import Flask, request
 from werkzeug.utils import secure_filename
 import os
-#from dataflow import *
+from dataflow import *
 import numpy as np
+import re
+import time
 
 ROOT_FOLDER = os.getcwd()
-UPLOAD_FOLDER = "Motionlens/Server/files"
+UPLOAD_FOLDER = "files"
 
 DATA_PATH = "files"
 
@@ -19,11 +21,20 @@ def get():
 
 @app.route("/file", methods = ["POST"])
 def upload():
-	print(request.get_data())
+	"""
+	pattern = r'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'
+	for match in re.finditer(pattern,str(request.get_data())):
+		print("yoyo : " + str(match.start()))
+	"""
+	#print(request.get_data())
+	rawstring = request.get_data()
+	#rawstring = s[2:-1]
 	#rawstring = list(request.form.to_dict().keys())[0]
-	#fname = time.strftime("%Y%m%d-%H%M%S")
-	#filepath = os.path.join(UPLOAD_FOLDER, fname)
-	#MDCAR.save_from_string(rawstring, filepath)
+	fname = time.strftime("%Y%m%d-%H%M%S")
+	filepath = os.path.join(UPLOAD_FOLDER, fname)
+	MDCAR.save_from_string(rawstring, filepath)
+	mdcar = MDCAR.from_file(filepath)
+	print(mdcar)
 
 	return "post - nok"
 

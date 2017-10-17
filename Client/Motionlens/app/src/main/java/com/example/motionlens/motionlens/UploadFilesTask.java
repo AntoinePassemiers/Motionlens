@@ -29,6 +29,19 @@ public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
         for (URL url : urls) {
             try {
 
+                StringBuffer buffer = new StringBuffer();
+                for(int i=0; i < DataflowManager.MAX_N_BYTES; i++){
+                    buffer.append(Character.forDigit((data.get(i) >> 4) & 0xF, 16));
+                    buffer.append(Character.forDigit((data.get(i) & 0xF), 16));
+                    buffer.append("  ");
+
+                }
+
+                System.out.println(buffer);
+
+                // data = ByteBuffer.allocate(DataflowManager.MAX_N_BYTES);
+
+
                 OkHttpClient client = new OkHttpClient();
                 data.rewind();
 
@@ -42,6 +55,7 @@ public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
                         .build();
 
                 success = client.newCall(request).execute().isSuccessful();
+                System.out.println("Success: " + success);
 
             } catch (IOException e) {
                 e.printStackTrace();

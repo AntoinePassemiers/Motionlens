@@ -8,11 +8,11 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 
 public class DataflowManager {
-    private static final String SERVER_URL = "--server--/file";
+    private static final String SERVER_URL = "http://4c06951c.ngrok.io/file";
     private static final String TAG = "dfManager";
     private Context context;
     public static final int SAMPLE_SIZE = (3 * Float.SIZE + Long.SIZE) / Byte.SIZE;
-    public static final int MAX_N_SAMPLES = 100;
+    public static final int MAX_N_SAMPLES = 5;
     public static final int MAX_N_BYTES_PER_BUFFER = MAX_N_SAMPLES * SAMPLE_SIZE;
     public static final int HEADER_N_BYTES = 2 * 4;
     public static final int MAX_N_BYTES = 2 * MAX_N_BYTES_PER_BUFFER + HEADER_N_BYTES;
@@ -62,6 +62,13 @@ public class DataflowManager {
 
     public void packData() {
         try {
+            flushBuffers();
+            acc_data.putFloat(2.4f); acc_data.putFloat(63.32f); acc_data.putFloat(234.29f);
+            acc_data.putLong(98345);
+            acc_data.putFloat(2.4f); acc_data.putFloat(63.32f); acc_data.putFloat(234.29f);
+            acc_data.putLong(98345);
+            acc_data_n_samples = 2;
+
             ByteBuffer data = ByteBuffer.allocate(MAX_N_BYTES);
             data.put(ByteBuffer.allocate(4).putInt(acc_data_n_samples).array());
             data.put(ByteBuffer.allocate(4).putInt(gyr_data_n_samples).array());
