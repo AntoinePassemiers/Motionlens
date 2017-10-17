@@ -7,7 +7,7 @@ import re
 import time
 
 ROOT_FOLDER = os.getcwd()
-UPLOAD_FOLDER = "files"
+UPLOAD_FOLDER = "Motionlens/Server/files"
 
 DATA_PATH = "files"
 EXTENSION = ".mdcar"
