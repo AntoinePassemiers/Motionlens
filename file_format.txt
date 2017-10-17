@@ -1,8 +1,9 @@
 HEADER (24 bytes)
 ====================
+Long : ha_id = human activity id
+Long : dv_id = device id
 Long : n_acc = number of accelerometer samples
 Long : n_gyr = number of gyroscope samples
-Long : ha_id = human activity id
 
 DATA (samples of size 20 bytes)
 ====
