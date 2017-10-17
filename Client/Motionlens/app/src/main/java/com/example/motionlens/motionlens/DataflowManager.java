@@ -82,7 +82,7 @@ public class DataflowManager {
 
             flushBuffers();
 
-            new UploadFilesTask(data).execute(new URL(SERVER_URL));
+            new UploadFilesTask(data, n_required_bytes).execute(new URL(SERVER_URL));
 
         } catch (IOException e) {
             e.printStackTrace();
