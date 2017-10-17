@@ -17,9 +17,11 @@ public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
     private static final String TAG = "dfManager";
 
     ByteBuffer data;
+    Integer n_bytes;
 
     UploadFilesTask(ByteBuffer data, int n_bytes) {
         this.data = data;
+        this.n_bytes = n_bytes;
     }
 
     @Override
@@ -30,7 +32,7 @@ public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
             try {
 
                 StringBuffer buffer = new StringBuffer();
-                for(int i = 0; i < DataflowManager.MAX_N_BYTES; i++){
+                for(int i = 0; i < n_bytes; i++){
                     buffer.append(Character.forDigit((data.get(i) >> 4) & 0xF, 16));
                     buffer.append(Character.forDigit((data.get(i) & 0xF), 16));
                     buffer.append("  ");

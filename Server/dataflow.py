@@ -38,6 +38,7 @@ SAMPLE_T = np.dtype([
 assert(SAMPLE_T.itemsize == 20)
 
 class MDCAR:
+	HEADER_N_BYTES = 16
 	def __init__(self, ha_id, sensor1_data, sensor2_data):
 		self.ha_id = ha_id
 		self.sensor1_data = sensor1_data
@@ -77,12 +78,12 @@ class MDCAR:
 	def from_file(filepath):
 		with open(filepath, "rb") as f:
 			rawstring = f.read()
-			print(rawstring[:8])
-			header = np.fromstring(rawstring[:8], dtype = BE_INT32_T)
+			print(rawstring[:MDCAR.HEADER_N_BYTES])
+			header = np.fromstring(rawstring[:MDCAR.HEADER_N_BYTES], dtype = BE_INT32_T)
 			print(header)
 			n_acc_samples = header[0]
 			n_gyr_samples = header[1]
-			data = np.fromstring(rawstring[8:], dtype = SAMPLE_T)
+			data = np.fromstring(rawstring[MDCAR.HEADER_N_BYTES:], dtype = SAMPLE_T)
 			return data
 
 	@staticmethod
