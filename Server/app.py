@@ -10,7 +10,7 @@ ROOT_FOLDER = os.getcwd()
 UPLOAD_FOLDER = "files"
 
 DATA_PATH = "files"
-
+EXTENSION = ".mdcar"
 
 app = Flask(__name__)
 
@@ -30,7 +30,7 @@ def upload():
 	rawstring = request.get_data()
 	#rawstring = s[2:-1]
 	#rawstring = list(request.form.to_dict().keys())[0]
-	fname = time.strftime("%Y%m%d-%H%M%S")
+	fname = time.strftime("%Y%m%d-%H%M%S" + EXTENSION)
 	filepath = os.path.join(UPLOAD_FOLDER, fname)
 	MDCAR.save_from_string(rawstring, filepath)
 	mdcar = MDCAR.from_file(filepath)
