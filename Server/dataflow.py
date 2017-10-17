@@ -9,25 +9,11 @@ import time
 
 DATA_PATH = "files"
 
-"""
-import numpy as np
-
-
-s = np.array([0, 0, 0, 1, 0, 0, 0, 1], dtype = np.uint8)
-
-be_int32 = np.dtype(np.int32).newbyteorder('>')
-p = s.view(dtype = be_int32)
-print(p)
-
-
-be_float32 = np.dtype(np.float32).newbyteorder('>')
-s = np.fromstring("CUff", dtype = be_float32)
-print(s)
-"""
 
 BE_INT32_T = np.dtype(np.int32).newbyteorder('>')
 BE_INT64_T = np.dtype(np.int64).newbyteorder('>')
 BE_FLOAT32_T = np.dtype(np.float32).newbyteorder('>')
+
 
 
 SAMPLE_T = np.dtype([
@@ -39,7 +25,10 @@ assert(SAMPLE_T.itemsize == 20)
 
 class MDCAR:
 	HEADER_N_BYTES = 16
-	def __init__(self, ha_id, sensor1_data, sensor2_data):
+	BAD_FILE = "bad mdcar"
+
+	def __init__(self, device_id, ha_id, sensor1_data, sensor2_data):
+		self.device_id = device_id
 		self.ha_id = ha_id
 		self.sensor1_data = sensor1_data
 		self.sensor2_data = sensor2_data
@@ -72,33 +61,32 @@ class MDCAR:
 
 		bytes = MDCAR.to_bytes(data, n_acc_samples, n_gyr_samples)
 		bytes.tofile(filepath)
-		return data
+		return MDCAR(0, 0, data[:n_acc_samples], data[n_acc_samples:])
+
+	@staticmethod
+	def from_string(rawstring):
+		if (len(rawstring) - MDCAR.HEADER_N_BYTES) % SAMPLE_T.itemsize != 0:
+			return MDCAR.BAD_FILE
+		header = np.fromstring(rawstring[:MDCAR.HEADER_N_BYTES], dtype = BE_INT32_T)
+		ha_id         = header[0]
+		device_id     = header[1]
+		n_acc_samples = header[2]
+		n_gyr_samples = header[3]
+		data = np.fromstring(rawstring[MDCAR.HEADER_N_BYTES:], dtype = SAMPLE_T)
+		if len(data) != n_acc_samples + n_gyr_samples:
+			return MDCAR.BAD_FILE
+		acc_data = data[:n_acc_samples]
+		gyr_data = data[n_acc_samples:]
+		return MDCAR(device_id, ha_id, acc_data, gyr_data)
 
 	@staticmethod
 	def from_file(filepath):
 		with open(filepath, "rb") as f:
 			rawstring = f.read()
-			print(rawstring[:MDCAR.HEADER_N_BYTES])
-			header = np.fromstring(rawstring[:MDCAR.HEADER_N_BYTES], dtype = BE_INT32_T)
-			print(header)
-			n_acc_samples = header[0]
-			n_gyr_samples = header[1]
-			data = np.fromstring(rawstring[MDCAR.HEADER_N_BYTES:], dtype = SAMPLE_T)
-			return data
+		return MDCAR.from_string(rawstring)
 
 	@staticmethod
 	def save_from_string(rawstring, filepath):
 		with open(filepath, "wb") as f:
 			f.write(rawstring)
 			f.flush()
-
-
-def test_mdcar():
-	encoded = MDCAR.random_file("temp.mdcar", 40, 50)
-	decoded = MDCAR.from_file("temp.mdcar")
-	assert((encoded == decoded).all())
-	print("Tests: success")
-
-
-#decoded = MDCAR.from_file("files/20171017-182033")
-# test_mdcar()

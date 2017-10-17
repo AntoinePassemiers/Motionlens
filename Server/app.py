@@ -32,10 +32,12 @@ def upload():
 	#rawstring = list(request.form.to_dict().keys())[0]
 	fname = time.strftime("%Y%m%d-%H%M%S" + EXTENSION)
 	filepath = os.path.join(UPLOAD_FOLDER, fname)
-	MDCAR.save_from_string(rawstring, filepath)
-	mdcar = MDCAR.from_file(filepath)
-	print(mdcar)
 
+	# Check if file is legit
+	if MDCAR.from_string(rawstring) == MDCAR.BAD_FILE:
+		return "post - bad mdcar"
+
+	MDCAR.save_from_string(rawstring, filepath)
 	return "post - nok"
 
 
