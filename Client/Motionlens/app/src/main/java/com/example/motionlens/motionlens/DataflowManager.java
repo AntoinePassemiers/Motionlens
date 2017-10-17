@@ -1,6 +1,8 @@
 package com.example.motionlens.motionlens;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,20 +15,21 @@ public class DataflowManager {
     private static final String TAG = "dfManager";
     private Context context;
     public static final int SAMPLE_SIZE = (3 * Float.SIZE + Long.SIZE) / Byte.SIZE;
-    public static final int MAX_N_SAMPLES = 100;
+    public static final int MAX_N_SAMPLES = 20000;
     public static final int MAX_N_BYTES_PER_BUFFER = MAX_N_SAMPLES * SAMPLE_SIZE;
     public static final int HEADER_N_BYTES = 4 * 4;
-    public static final int MAX_N_BYTES = 2 * MAX_N_BYTES_PER_BUFFER + HEADER_N_BYTES;
 
     private Integer current_ha_id;
+    private Integer device_id;
     private ByteArrayOutputStream bas;
     private ByteBuffer acc_data;
     private int acc_data_n_samples;
     private ByteBuffer gyr_data;
     private int gyr_data_n_samples;
 
-    public DataflowManager(Context context) {
+    public DataflowManager(Context context, Integer device_id) {
         this.context = context;
+        this.device_id = device_id;
         bas = new ByteArrayOutputStream();
         flushBuffers();
     }
@@ -44,7 +47,7 @@ public class DataflowManager {
     }
 
     public void stopHA() {
-        // packData();
+        packData();
     }
 
     public void addAccSample(float X, float Y, float Z) {
@@ -63,19 +66,10 @@ public class DataflowManager {
 
     public void packData() {
         try {
-            flushBuffers();
-            acc_data.putFloat(2.4f); acc_data.putFloat(63.32f); acc_data.putFloat(234.29f);
-            acc_data.putLong(98345);
-            acc_data.putFloat(2.4f); acc_data.putFloat(63.32f); acc_data.putFloat(234.29f);
-            acc_data.putLong(98345);
-            acc_data_n_samples = 2;
-
             int n_required_bytes = HEADER_N_BYTES + SAMPLE_SIZE * (acc_data_n_samples + gyr_data_n_samples);
             ByteBuffer data = ByteBuffer.allocate(n_required_bytes);
-            int activity_id = 45; // TODO
-            int user_id = 26; // TODO
-            data.put(ByteBuffer.allocate(4).putInt(activity_id).array());
-            data.put(ByteBuffer.allocate(4).putInt(user_id).array());
+            data.put(ByteBuffer.allocate(4).putInt(current_ha_id).array());
+            data.put(ByteBuffer.allocate(4).putInt(device_id).array());
             data.put(ByteBuffer.allocate(4).putInt(acc_data_n_samples).array());
             data.put(ByteBuffer.allocate(4).putInt(gyr_data_n_samples).array());
             data.put(Arrays.copyOfRange(acc_data.array(), 0, SAMPLE_SIZE * acc_data_n_samples));
@@ -88,5 +82,9 @@ public class DataflowManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setHAID(int ha_id) {
+        current_ha_id = ha_id;
     }
 }

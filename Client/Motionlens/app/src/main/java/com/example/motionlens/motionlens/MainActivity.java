@@ -1,20 +1,21 @@
 package com.example.motionlens.motionlens;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -22,13 +23,17 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    private static boolean USE_WAKE_LOCK = false;
+    private static boolean USE_WAKE_LOCK = true;
+    private static Integer ACCELEROMETER_DELAY = 200000;
+    private static Integer GYROSCOPE_DELAY = 200000;
 
     private boolean recording = false;
+    private int current_ha_id = -1;
 
     private SensorManager sensorManager;
     private Sensor accelerometer, gyroscope;
@@ -52,16 +57,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         context = getApplicationContext();
 
         human_activities = new HashMap<String, Integer>();
-        dfManager = new DataflowManager(context);
+        dfManager = new DataflowManager(context, getDeviceID());
 
         // https://developer.android.com/training/keyboard-input/style.html
         spinner = (Spinner) findViewById(R.id.activity_with_white_list);
         String[] has = getResources().getStringArray(R.array.human_activities);
         for (String ha : has) {
-            Integer ha_id = Integer.parseInt(ha.substring(0, 3));
+            current_ha_id = Integer.parseInt(ha.substring(0, 3));
             String ha_name = ha.substring(6);
             assert(human_activities.get(ha_name) == null);
-            human_activities.put(ha_name, ha_id);
+            human_activities.put(ha_name, current_ha_id);
         }
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(
@@ -81,19 +86,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         recordButton = (Button) findViewById(R.id.record_button);
         recordButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                recording = !recording;
-                if (recording) { // Start recording
-                    recordButton.setText("Pause");
-                    Log.d("Selected text", spinner.getSelectedItem().toString().split("\n")[0]);
-                    String selection = spinner.getSelectedItem().toString();
-                    Integer ha_id = human_activities.get(selection.split("\n")[0]);
-                    if (ha_id == null) throw new AssertionError("Could not find activity by name");
-                    dfManager.startHA(ha_id);
-                }
-                else { // Stop recording
-                    recordButton.setText("Record");
-                    dfManager.stopHA();
-                }
+            recording = !recording;
+            if (recording) { // Start recording
+                recordButton.setText("Pause");
+                Log.d("Selected text", spinner.getSelectedItem().toString().split("\n")[0]);
+                String selection = spinner.getSelectedItem().toString();
+                current_ha_id = human_activities.get(selection.split("\n")[0]);
+                // if (current_ha_id == null) throw new AssertionError("Could not find activity by name");
+                dfManager.startHA(current_ha_id);
+            }
+            else { // Stop recording
+                recordButton.setText("Record");
+                dfManager.stopHA();
+            }
             }
         });
 
@@ -112,8 +117,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         super.onResume();
         releaseWakeLock();
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, accelerometer, ACCELEROMETER_DELAY);
+        sensorManager.registerListener(this, gyroscope, GYROSCOPE_DELAY);
     }
 
     protected void onPause() {
@@ -183,5 +188,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             wakeLock.release();
             wakeLock = null;
         }
+    }
+
+    public Integer getDeviceID() {
+        SharedPreferences sp = getSharedPreferences("HAR-prefs", Activity.MODE_PRIVATE);
+        Integer device_id = sp.getInt("device_id", -1);
+        if(device_id == -1) {
+            Random rng = new Random();
+            device_id = (int)(rng.nextDouble() * Integer.MAX_VALUE);
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putInt("device_id", device_id);
+            editor.commit();
+        }
+        return device_id;
     }
 }

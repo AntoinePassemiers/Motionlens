@@ -41,9 +41,6 @@ public class UploadFilesTask extends AsyncTask<URL, Integer, Boolean> {
 
                 System.out.println(buffer);
 
-                // data = ByteBuffer.allocate(DataflowManager.MAX_N_BYTES);
-
-
                 OkHttpClient client = new OkHttpClient();
                 data.rewind();
 
