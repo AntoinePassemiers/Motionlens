@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class DataflowManager {
-    private static final String SERVER_URL = "renavspainatal.pythonanywhere.com/file";
+    private static final String SERVER_URL = "http://renavspainatal.pythonanywhere.com/file";
     private static final String TAG = "dfManager";
     private Context context;
     public static final int SAMPLE_SIZE = (3 * Float.SIZE + Long.SIZE) / Byte.SIZE;
