@@ -14,14 +14,17 @@ public class DataflowManager {
     private static final String SERVER_URL = "http://renavspainatal.pythonanywhere.com/file";
     private static final String TAG = "dfManager";
     private Context context;
-    public static final int SAMPLE_SIZE = (3 * Float.SIZE + Long.SIZE) / Byte.SIZE;
+
+    public static final int INT_SIZE_IN_BYTES = Integer.SIZE / Byte.SIZE;
+    public static final int LONG_SIZE_IN_BYTES = Long.SIZE / Byte.SIZE;
+    public static final int FLOAT_SIZE_IN_BYTES = Float.SIZE / Byte.SIZE;
+    public static final int SAMPLE_SIZE = 3 * FLOAT_SIZE_IN_BYTES + LONG_SIZE_IN_BYTES;
     public static final int MAX_N_SAMPLES = 20000;
     public static final int MAX_N_BYTES_PER_BUFFER = MAX_N_SAMPLES * SAMPLE_SIZE;
-    public static final int HEADER_N_BYTES = 4 * 4;
+    public static final int HEADER_N_BYTES = 4 * LONG_SIZE_IN_BYTES;
 
     private Integer current_ha_id;
     private Integer device_id;
-    private ByteArrayOutputStream bas;
     private ByteBuffer acc_data;
     private int acc_data_n_samples;
     private ByteBuffer gyr_data;
@@ -30,7 +33,6 @@ public class DataflowManager {
     public DataflowManager(Context context, Integer device_id) {
         this.context = context;
         this.device_id = device_id;
-        bas = new ByteArrayOutputStream();
         flushBuffers();
     }
 
@@ -68,10 +70,10 @@ public class DataflowManager {
         try {
             int n_required_bytes = HEADER_N_BYTES + SAMPLE_SIZE * (acc_data_n_samples + gyr_data_n_samples);
             ByteBuffer data = ByteBuffer.allocate(n_required_bytes);
-            data.put(ByteBuffer.allocate(4).putInt(current_ha_id).array());
-            data.put(ByteBuffer.allocate(4).putInt(device_id).array());
-            data.put(ByteBuffer.allocate(4).putInt(acc_data_n_samples).array());
-            data.put(ByteBuffer.allocate(4).putInt(gyr_data_n_samples).array());
+            data.put(ByteBuffer.allocate(INT_SIZE_IN_BYTES).putInt(current_ha_id).array());
+            data.put(ByteBuffer.allocate(INT_SIZE_IN_BYTES).putInt(device_id).array());
+            data.put(ByteBuffer.allocate(INT_SIZE_IN_BYTES).putInt(acc_data_n_samples).array());
+            data.put(ByteBuffer.allocate(INT_SIZE_IN_BYTES).putInt(gyr_data_n_samples).array());
             data.put(Arrays.copyOfRange(acc_data.array(), 0, SAMPLE_SIZE * acc_data_n_samples));
             data.put(Arrays.copyOfRange(gyr_data.array(), 0, SAMPLE_SIZE * gyr_data_n_samples));
 
