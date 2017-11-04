@@ -19,10 +19,14 @@ def interpolate_3d_samples(data):
 
 
 if __name__ == "__main__":
-    mdcar = MDCAR.from_file("files/20171017-210244.mdcar")
+    mdcar = MDCAR.from_file("files/20171104-001745.mdcar")
     
     acc_data = mdcar.sensor1_data
     gyr_data = mdcar.sensor2_data
+
+    print(acc_data["X"])
+    plt.plot(gyr_data["X"])
+    plt.show()
 
     gyr_data = interpolate_3d_samples(gyr_data)
     print(gyr_data)

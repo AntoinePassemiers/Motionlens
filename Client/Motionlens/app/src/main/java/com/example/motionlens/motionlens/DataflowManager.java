@@ -70,10 +70,10 @@ public class DataflowManager {
         try {
             int n_required_bytes = HEADER_N_BYTES + SAMPLE_SIZE * (acc_data_n_samples + gyr_data_n_samples);
             ByteBuffer data = ByteBuffer.allocate(n_required_bytes);
-            data.put(ByteBuffer.allocate(INT_SIZE_IN_BYTES).putInt(current_ha_id).array());
-            data.put(ByteBuffer.allocate(INT_SIZE_IN_BYTES).putInt(device_id).array());
-            data.put(ByteBuffer.allocate(INT_SIZE_IN_BYTES).putInt(acc_data_n_samples).array());
-            data.put(ByteBuffer.allocate(INT_SIZE_IN_BYTES).putInt(gyr_data_n_samples).array());
+            data.put(ByteBuffer.allocate(LONG_SIZE_IN_BYTES).putLong(current_ha_id).array());
+            data.put(ByteBuffer.allocate(LONG_SIZE_IN_BYTES).putLong(device_id).array());
+            data.put(ByteBuffer.allocate(LONG_SIZE_IN_BYTES).putLong(acc_data_n_samples).array());
+            data.put(ByteBuffer.allocate(LONG_SIZE_IN_BYTES).putLong(gyr_data_n_samples).array());
             data.put(Arrays.copyOfRange(acc_data.array(), 0, SAMPLE_SIZE * acc_data_n_samples));
             data.put(Arrays.copyOfRange(gyr_data.array(), 0, SAMPLE_SIZE * gyr_data_n_samples));
 

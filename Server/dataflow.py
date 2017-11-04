@@ -13,9 +13,6 @@ DATA_PATH = "files"
 BE_INT32_T = np.dtype(np.int32).newbyteorder('>')
 BE_INT64_T = np.dtype(np.int64).newbyteorder('>')
 BE_FLOAT32_T = np.dtype(np.float32).newbyteorder('>')
-
-
-
 SAMPLE_T = np.dtype([
 	("X", BE_FLOAT32_T), 
 	("Y", BE_FLOAT32_T),
@@ -24,7 +21,7 @@ SAMPLE_T = np.dtype([
 assert(SAMPLE_T.itemsize == 20)
 
 class MDCAR:
-	HEADER_N_BYTES = 16
+	HEADER_N_BYTES = 32
 	BAD_FILE = "bad mdcar"
 
 	def __init__(self, device_id, ha_id, sensor1_data, sensor2_data):
@@ -67,7 +64,8 @@ class MDCAR:
 	def from_string(rawstring):
 		if (len(rawstring) - MDCAR.HEADER_N_BYTES) % SAMPLE_T.itemsize != 0:
 			return MDCAR.BAD_FILE
-		header = np.fromstring(rawstring[:MDCAR.HEADER_N_BYTES], dtype = BE_INT32_T)
+		header = np.fromstring(rawstring[:MDCAR.HEADER_N_BYTES], dtype = BE_INT64_T)
+		print(header)
 		ha_id         = header[0]
 		device_id     = header[1]
 		n_acc_samples = header[2]
@@ -90,3 +88,8 @@ class MDCAR:
 		with open(filepath, "wb") as f:
 			f.write(rawstring)
 			f.flush()
+
+if __name__ == "__main__":
+	mdcar = MDCAR.from_file(os.path.join(DATA_PATH, "20171103-211429.mdcar"))
+	print(mdcar.device_id)
+	print(mdcar.ha_id)
